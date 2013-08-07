@@ -69,22 +69,34 @@ SolveU(int n, int k, int r, Vec& B, Vec& RHS)
 // assumed that the eliminations are done "in-place".
 // -------------------------------------------------------------------
 __global__ void
-forward_kernel(int n, int k, int r, REAL* B, REAL* RHS)
-{
     
    int bid = blockIdx.x + (gridDim.x * blockIdx.y);
    int tid = threadIdx.x  + (blockDim.x * threadIdx.y);
    int gid = bid * (blockDim.x * blockDim.y) + tid; 
- 
-   int l = 0;
+
+   int l = 0; 
 
    for (int i = n * gid + 1 ;  i < (n * gid) + n; i ++, l++) {
-	for (int j = i-k; j < i; j++) {       
-		//printf("\nRHS[%d] = %f", i, RHS[i]);
-		//printf("\nRHS[%d] = %f", j, RHS[j]);
-		//printf("\nB[%d] = %f",bi, B[bi]);
-		RHS[i] = RHS[i] - B[(l+1)*(2*k+1)-1]*RHS[j];
+	//printf("\nRHS[%d] = RHS[%d]",i , i);
+	int m = 0;
+	for (int j = i-k; j < i; j++, m++) {
+		//if (m > 0) {
+		//printf("\n(l-(k-2))*(2*k+1)+(m)*(2*k)-1 = %d", (l-(k-2))*(2*k+1)+(m)*(2*k)-1);
+		//printf("\n(m)*(2*k)-1 = %d", (m)*(2*k)-1);
+		if ((l-(k-2))*(2*k+1)+(m)*(2*k)-1 > k ) {
+			//printf("\n\tRHS[%d] = %f", j, RHS[j]);
+			//printf("\n\tB[%d] = %f", (l-1)*(2*k+1)+(m)*(2*k)-1, B[(l-1)*(2*k+1)+(m)*(2*k)-1]);
+			//printf("\n\tB[%d] = %f", (l-(k-2))*(2*k+1)+(m)*(2*k)-1, B[(l-(k-2))*(2*k+1)+(m)*(2*k)-1]);
+			//printf("\n\tB[%d] = %f", (l+1)*(2*k+1)-1, B[(l+1)*(2*k+1)-1]);
+			//printf(" - B[%d]*RHS[%d]", (l-1)*(2*k+1)+(m)*(2*k)-1, j);
+			//printf("\nB[%d] = %f, l = %d, m = %d", 
+			//	(l-1)*(2*k+1)+(m)*(2*k)-1, B[(l-1)*(2*k+1)+(m)*(2*k)-1], l, m);
+			//RHS[i] = RHS[i] - B[(l+1)*(2*k+1)-1]*RHS[j];
+			//RHS[i] = RHS[i] - B[(l-1)*(2*k+1)+(m)*(2*k)-1]*RHS[j];
+			RHS[i] = RHS[i] - B[(l-(k-2))*(2*k+1)+(m)*(2*k)-1]*RHS[j];
+		}
 	}
+	//printf("\n");
    }
 }
 __global__ void
@@ -97,17 +109,22 @@ backward_kernel(int n, int k, int r, REAL* B, REAL* RHS)
    
    int l = n-1;
    
-   RHS[n * gid - 1] = RHS[n * gid - 1] / B[l*(2*k+1)+1];
+   // do the first iteration outside the loop for indexing ease 
+   RHS[n * gid + n - 1] = RHS[n * gid + n - 1] / B[l*(2*k+1)+1];
+   
+   l -= 1;
+   // printf("\nl = %d", l);
+   
    for (int i = n * gid + n -  2 ;  i > n*gid - 1; i--, l--) {
-	printf("\n\tAccessing index %d of RHS", i);
 	for (int j = i+1; j < i + k + 1; j++) {       
-		printf("\n\t\tAccessing index %d of RHS", j);
-		printf("\n\t\tAccessing index %d of B",(l+1)*(2*k+1)-1);
-		RHS[i] = RHS[i] - B[(l+1)*(2*k+1)-1]*RHS[j];
+		//printf("\n\t\tAccessing index %d of RHS", i);
+		//printf("\n\t\tAccessing index %d of RHS", j);
+		//printf("\n\t\tAccessing index %d of B",(l+1)*(2*k+1));
+		RHS[i] = RHS[i] - B[(l+1)*(2*k+1)]*RHS[j]; 
 	}
 	RHS[i] = RHS[i] / B[l*(2*k+1)+1];
-	printf("\n\tAccessing index %d of B",l*(2*k+1)+1);
-	printf("\n");
+	//printf("\n\tAccessing index %d of B", l*(2*k+1)+1);
+	//printf("\n");
     }
 }
 

@@ -6,7 +6,7 @@ clc
 A = mmread('./build/A.mtx');
 RHS = mmread('./build/RHS.mtx');
 Y = mmread('./build/Y.mtx');
-X = mmread('./build/X.mtx');
+X = mmread('./buid/X.mtx');
 
 % Figure out problem dimensions.
 N = size(A,1);
@@ -15,8 +15,8 @@ R = length(RHS)/N;
 K = max(ia-ja);
 
 % Reshape RHS, Y, and X
-RHS = reshape(RHS,N,R);
-Y = reshape(Y,N,R);
+RHS = reshape(RHS,N,R)
+Y = reshape(Y,N,R)
 X = reshape(X,N,R);
 
 % Extract L and U factors from A.
@@ -37,8 +37,8 @@ for i = 1:R
     dX(i) = norm(X(:,i) - XX(:,i)) / norm(X(:,i));
 end
 % XX
-% YY
-% L = full(L)
+YY
+L = full(L)
 % U = full(U)
 % LU = full(A)
 

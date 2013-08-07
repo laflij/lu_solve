@@ -156,7 +156,7 @@ int main(int argc, char** argv)
 	timer.Start();
 	SolveU(n, k, r, B, RHS);
 	timer.Stop();
-	std::cout << "\nBackward sweep time: " << timer.getElapsed() << " ms" << std::endl;
+	std::cout << "Backward sweep time: " << timer.getElapsed() << " ms" << std::endl;
 #ifdef WRITE_TO_DISK
 	cusp::copy(RHS, RHSh);
 	cusp::io::write_matrix_market_file(RHSh, "X.mtx");
